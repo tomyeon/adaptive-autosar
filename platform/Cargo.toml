@@ -1,4 +1,11 @@
 [workspace]
 members = [
-    "ara",
+    "libs/ara/core",
+    "libs/ara/exec",
+    "bins/em",
 ]
+
+[workspace.dependencies]
+thiserror = "1.0"
+anyhow = "1.0"
+lazy_static = "1.5"
