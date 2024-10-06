@@ -1,0 +1,12 @@
+[package]
+name = "core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "core.rs"
+
+[dependencies]
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+lazy_static = { workspace = true }

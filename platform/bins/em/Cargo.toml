@@ -1,0 +1,15 @@
+[package]
+name = "em"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "em"
+path = "em.rs"
+
+[dependencies]
+core = { path = "../../libs/ara/core"}
+exec = { path = "../../libs/ara/exec"}
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+lazy_static = { workspace = true }
