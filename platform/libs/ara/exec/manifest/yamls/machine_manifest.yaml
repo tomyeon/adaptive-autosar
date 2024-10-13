@@ -1,0 +1,41 @@
+default_application_timeout: 3          # 3 seconds
+environment_variable:                   # environmental variables, default is empty
+  ENV1: "environment variable smaple1"
+  ENV2: "environment variable smaple2"
+  ENV3: "environment variable smaple3"
+process_mode:                           # process_mode, use this value if omit
+  - "Running"
+  - "Terminated"
+function_group_set:                     # function groupset, MachineFG if omit
+  MachineFG:
+    initial_mode: "Startup"
+    mode:
+      - "Startup"
+      - "Shutdown"
+      - "Restart"
+  FG1:
+    initial_mode: "Off"
+    mode:
+      - "Off"
+      - "On"
+  FG2:
+    initial_mode: "Off"
+    mode:
+      - "Off"
+      - "On"
+# ...
+# for exmaple
+# if you use empty file for machine manifest, default values are applied
+#
+# default_application_timeout: None
+# environment_variable: Empty
+# process_mode:
+#   - "Running"
+#   - "Terminated"
+# function_group_set:
+#   MachineFG:
+#     initial_mode: "Startup"
+#     mode:
+#       - "Startup"
+#       - "Shutdown"
+#       - "Restart"

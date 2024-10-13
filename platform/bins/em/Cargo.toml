@@ -13,3 +13,5 @@ exec = { path = "../../libs/ara/exec"}
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 lazy_static = { workspace = true }
+tokio = "1.40"
+serde = "1.0"
