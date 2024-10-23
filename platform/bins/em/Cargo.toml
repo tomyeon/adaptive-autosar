@@ -8,10 +8,11 @@ name = "em"
 path = "em.rs"
 
 [dependencies]
-core = { path = "../../libs/ara/core"}
-exec = { path = "../../libs/ara/exec"}
+ara_core = { path = "../../libs/ara/core"}
+ara_exec = { path = "../../libs/ara/exec"}
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 lazy_static = { workspace = true }
-tokio = "1.40"
+clap = { version = "4.0", features = ["derive"] }
+tokio = { version = "1.40", features = ["full"] }
 serde = "1.0"

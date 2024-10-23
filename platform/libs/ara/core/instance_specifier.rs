@@ -1,5 +1,5 @@
-use thiserror::Error;
 use anyhow::Result;
+use thiserror::Error;
 
 /// InstanceSpecifierError
 #[derive(Error, Debug)]
@@ -61,22 +61,31 @@ impl<'a> InstanceSpecifier<'a> {
         // xxx.xxx/.../xxx.xxx
         let parts: Vec<&str> = meta_model_identifier.split('/').collect();
         if parts.is_empty() {
-            return Err(InstanceSpecifierError::InvalidMetaModelPath(meta_model_identifier.to_owned()).into());
+            return Err(InstanceSpecifierError::InvalidMetaModelPath(
+                meta_model_identifier.to_owned(),
+            )
+            .into());
         }
 
         for part in parts {
             // xxx.xxx
             if part.is_empty() {
-                return Err(InstanceSpecifierError::InvalidMetaModelPath(meta_model_identifier.to_owned()).into());
+                return Err(InstanceSpecifierError::InvalidMetaModelPath(
+                    meta_model_identifier.to_owned(),
+                )
+                .into());
             }
 
             if part.split('.').collect::<Vec<&str>>().len() != 2 {
-                return Err(InstanceSpecifierError::InvalidMetaModelShortname(meta_model_identifier.to_owned()).into());
+                return Err(InstanceSpecifierError::InvalidMetaModelShortname(
+                    meta_model_identifier.to_owned(),
+                )
+                .into());
             }
         }
 
         Ok(Self {
-            meta_model_identifier
+            meta_model_identifier,
         })
     }
 
@@ -95,7 +104,7 @@ impl<'a> InstanceSpecifier<'a> {
     ///           if the metaModelIdentifier is not a valid path to a model element
     /// Description: Create a new instance of this class.
     pub fn create(meta_model_identifier: &'a str) -> Result<Self> {
-         InstanceSpecifier::validate(meta_model_identifier)
+        InstanceSpecifier::validate(meta_model_identifier)
     }
 
     /// Symbol: ToString()

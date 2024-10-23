@@ -1,6 +1,7 @@
 use std::{
     collections::{HashMap, HashSet},
     io::Read,
+    path::Path,
 };
 
 use anyhow::Result;
@@ -122,7 +123,7 @@ impl MachineManifest {
         Ok(manifest)
     }
 
-    pub fn from_file(path: &str) -> Result<Self> {
+    pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
         let mut file = std::fs::File::open(path)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;

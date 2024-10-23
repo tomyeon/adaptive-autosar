@@ -2,6 +2,7 @@ use std::{collections::HashMap, io::Read};
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 use thiserror::Error;
 
 use super::machine_manifest::MachineManifest;
@@ -31,21 +32,21 @@ enum ExecutionManifestError {
 // DO NOT ADD Default derive
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct ExecutionManifest {
-    name: String,
+    pub name: String,
     #[serde(default)]
-    environmental_variable: HashMap<String, String>,
+    pub environmental_variable: HashMap<String, String>,
     #[serde(default)]
-    argument: HashMap<String, String>,
+    pub argument: HashMap<String, String>,
     #[serde(default)]
-    enter_exit_timeout: Option<EnterExitTimeout>,
+    pub enter_exit_timeout: Option<EnterExitTimeout>,
     #[serde(default)]
-    reporting_behavior: bool,
+    pub reporting_behavior: bool,
     #[serde(default)]
-    number_of_restart: i32,
+    pub number_of_restart: i32,
     #[serde(default)]
-    app_dependency: Vec<String>,
+    pub app_dependency: Vec<String>,
     #[serde(default)]
-    mode_dependency: Vec<String>,
+    pub mode_dependency: Vec<String>,
 }
 
 impl ExecutionManifest {
@@ -54,7 +55,7 @@ impl ExecutionManifest {
         Ok(manifest)
     }
 
-    pub fn from_file(path: &str) -> Result<Self> {
+    pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
         let mut file = std::fs::File::open(path)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
@@ -90,12 +91,17 @@ impl ExecutionManifest {
                 Some((fg, mode)) => {
                     let fg = fg.to_string();
                     if machine_manifest.function_group_set.contains_key(&fg) {
-                        println!("{} ==> {:?}", fg, machine_manifest.function_group_set.get(&fg));
+                        println!(
+                            "{} ==> {:?}",
+                            fg,
+                            machine_manifest.function_group_set.get(&fg)
+                        );
                         if let Some(fg_mode) = machine_manifest.function_group_set.get(&fg) {
                             let mode = mode.to_string();
                             if !fg_mode.mode.contains(&mode) {
                                 return Err(ExecutionManifestError::NoModeInFG(
-                                    dependency.clone(), self.name.clone(),
+                                    dependency.clone(),
+                                    self.name.clone(),
                                 )
                                 .into());
                             }
@@ -121,8 +127,8 @@ impl ExecutionManifest {
 }
 
 mod tests {
-    use super::*;
     use super::super::machine_manifest::FunctionGroupMode;
+    use super::*;
 
     #[test]
     fn serialize() {
@@ -196,11 +202,13 @@ mod tests {
         let mut execution_manifest = ExecutionManifest::from(&execution_manifest_str).unwrap();
         let machine_manifest = MachineManifest::from("").unwrap();
         execution_manifest.name = "TestApp".to_owned();
-        execution_manifest.app_dependency = vec!["APP1.Running".to_owned(), "APP2.Terminated".to_owned()];
+        execution_manifest.app_dependency =
+            vec!["APP1.Running".to_owned(), "APP2.Terminated".to_owned()];
         assert!(execution_manifest.validate(&machine_manifest).is_ok());
 
         // InvalidApplicationDependencyFormat
-        execution_manifest.app_dependency = vec!["APP1Running".to_owned(), "APP2.Terminated".to_owned()];
+        execution_manifest.app_dependency =
+            vec!["APP1Running".to_owned(), "APP2.Terminated".to_owned()];
         let validate = execution_manifest.validate(&machine_manifest);
         assert_eq!(
             validate.err().map(|e| e.to_string()).unwrap(),
@@ -208,7 +216,8 @@ mod tests {
         );
 
         // InvalidApplicationDependencyMode
-        execution_manifest.app_dependency = vec!["APP1.Running".to_owned(), "APP2.Terminating".to_owned()];
+        execution_manifest.app_dependency =
+            vec!["APP1.Running".to_owned(), "APP2.Terminating".to_owned()];
         let validate = execution_manifest.validate(&machine_manifest);
         assert_eq!(
             validate.err().map(|e| e.to_string()).unwrap(),
@@ -247,10 +256,13 @@ mod tests {
 
         // EmptyModeInFg
         execution_manifest.mode_dependency = vec!["FG1.On".to_owned()];
-        machine_manifest.function_group_set.insert("FG1".to_owned(), FunctionGroupMode {
-            initial_mode: "FG1".to_owned(),
-            mode: vec![],
-        });
+        machine_manifest.function_group_set.insert(
+            "FG1".to_owned(),
+            FunctionGroupMode {
+                initial_mode: "FG1".to_owned(),
+                mode: vec![],
+            },
+        );
         let validate = execution_manifest.validate(&machine_manifest);
         assert_eq!(
             validate.err().map(|e| e.to_string()).unwrap(),

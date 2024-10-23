@@ -1,8 +1,7 @@
-
-use thiserror::Error;
 use anyhow::Result;
 use lazy_static::lazy_static;
 use std::sync::Mutex;
+use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum AraCoreError {
@@ -87,7 +86,6 @@ pub fn deinitialize() -> Result<()> {
     *INITALIZED.lock().unwrap() = false;
     Ok(())
 }
-
 
 /// 7.2.3.2 SIGABRT handler
 /// Note : Not support in Rust language
