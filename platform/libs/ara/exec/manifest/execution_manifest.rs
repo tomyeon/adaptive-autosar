@@ -91,11 +91,11 @@ impl ExecutionManifest {
                 Some((fg, mode)) => {
                     let fg = fg.to_string();
                     if machine_manifest.function_group_set.contains_key(&fg) {
-                        println!(
-                            "{} ==> {:?}",
-                            fg,
-                            machine_manifest.function_group_set.get(&fg)
-                        );
+                        // println!(
+                        //     "{} ==> {:?}",
+                        //     fg,
+                        //     machine_manifest.function_group_set.get(&fg)
+                        // );
                         if let Some(fg_mode) = machine_manifest.function_group_set.get(&fg) {
                             let mode = mode.to_string();
                             if !fg_mode.mode.contains(&mode) {

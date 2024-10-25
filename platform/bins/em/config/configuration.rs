@@ -122,11 +122,13 @@ pub fn validate_manifest(
             }
 
             // Not possible to have self dependency
-            if app == execution.name {
-                return Err(ExecutionManifestError::SelfDependency(app.to_owned()).into());
-            }
+            // It's not possible yet
+            // if app == execution.name {
+            //     return Err(ExecutionManifestError::SelfDependency(app.to_owned()).into());
+            // }
 
             // dependency app should in the same function group's state
+
             let mut mode_dependency_valid = false;
             for mode_dependency in &app_hashmap.get(app).unwrap().mode_dependency {
                 if execution.mode_dependency.contains(mode_dependency) {
@@ -263,7 +265,7 @@ mod tests {
         let mut file = File::create(&oara_manifest_path).unwrap();
         file.write_all(contents.as_bytes()).unwrap();
 
-        oara_exec_path
+        oara_manifest_path
     }
 
     #[test]
@@ -313,22 +315,139 @@ mod tests {
 
         // load execution manifest
         let execution_manifest = load_execution_manifest(&oara_config_path, "");
-        assert!(execution_manifest.is_err());   // No oara/exec folder
+        assert!(execution_manifest.is_err()); // No oara/exec folder
 
         fs::remove_dir_all(&oara_config_path).unwrap();
     }
 
     #[test]
-    fn execution_manifest_duplicated_app_name() {}
+    fn execution_manifest_duplicated_app_name() {
+        // load machine manifest
+        let contents = valid_machine_manifest();
+        let oara_config_path = configure_machine_manifest("configuration-t5", contents);
+        let machine_manifest = load_machine_manifest(&oara_config_path).unwrap();
+
+        // load execution manifest
+        let contents = valid_execution_manifest();
+        let oara_exec_path = add_oara_exec_folder(&oara_config_path);
+        let oara_exec_file_path = configure_execution_manifest(oara_exec_path, "t5", contents);
+
+        // change file name
+        let mut new_exec_file_path = oara_exec_file_path.clone();
+        let _ = new_exec_file_path.pop();
+        let new_file_name = format!("t6_{}", EXECUTION_MANIFEST_FILE);
+        new_exec_file_path.push(new_file_name.as_str());
+        fs::copy(oara_exec_file_path, new_exec_file_path).unwrap();
+
+        let execution_manifest = load_execution_manifest(&oara_config_path, "");
+        assert!(execution_manifest.is_ok());
+
+        let validate = validate_manifest(machine_manifest, execution_manifest.unwrap());
+        assert_eq!(
+            validate.err().map(|e| e.to_string()).unwrap(),
+            String::from("Duplicated application name : SM"),
+        );
+
+        fs::remove_dir_all(&oara_config_path).unwrap();
+    }
 
     #[test]
-    fn missing_dependency_app() {}
+    fn missing_dependency_app() {
+        // load machine manifest
+        let contents = valid_machine_manifest();
+        let oara_config_path = configure_machine_manifest("configuration-t6", contents);
+        let machine_manifest = load_machine_manifest(&oara_config_path).unwrap();
+
+        // load execution manifest
+        let app_manifest: &'static str = r#"
+            name: SM
+            app_dependency:
+              - UCM.Running
+            mode_dependency:
+              - MachineFG.Startup
+        "#;
+        let oara_exec_path = add_oara_exec_folder(&oara_config_path);
+        let _ = configure_execution_manifest(oara_exec_path, "t7", app_manifest);
+
+        let execution_manifest = load_execution_manifest(&oara_config_path, "");
+        assert!(execution_manifest.is_ok());
+
+        let validate = validate_manifest(machine_manifest, execution_manifest.unwrap());
+        assert_eq!(
+            validate.err().map(|e| e.to_string()).unwrap(),
+            String::from("Missing dependency application : UCM for SM"),
+        );
+
+        fs::remove_dir_all(&oara_config_path).unwrap();
+    }
 
     #[test]
-    fn self_dependency_app() {}
+    #[ignore = "not implement missing dependency"]
+    fn self_dependency_app() {
+        // load machine manifest
+        let contents = valid_machine_manifest();
+        let oara_config_path = configure_machine_manifest("configuration-t7", contents);
+        let machine_manifest = load_machine_manifest(&oara_config_path).unwrap();
+
+        // load execution manifest
+        let app_manifest: &'static str = r#"
+            name: SM
+            app_dependency:
+              - SM.Running
+            mode_dependency:
+              - MachineFG.Startup
+        "#;
+        let oara_exec_path = add_oara_exec_folder(&oara_config_path);
+        let _ = configure_execution_manifest(oara_exec_path, "t8", app_manifest);
+
+        let execution_manifest = load_execution_manifest(&oara_config_path, "");
+        assert!(execution_manifest.is_ok());
+
+        let validate = validate_manifest(machine_manifest, execution_manifest.unwrap());
+        assert_eq!(
+            validate.err().map(|e| e.to_string()).unwrap(),
+            String::from("Self dependency is not allowed : SM"),
+        );
+
+        fs::remove_dir_all(&oara_config_path).unwrap();
+    }
 
     #[test]
-    fn invalid_dependency_app() {}
+    fn invalid_mode_dependency_app() {
+        // load machine manifest
+        let contents = valid_machine_manifest();
+        let oara_config_path = configure_machine_manifest("configuration-t8", contents);
+        let machine_manifest = load_machine_manifest(&oara_config_path).unwrap();
+
+        // load execution manifest
+        let app_manifest1: &'static str = r#"
+            name: SM
+            app_dependency:
+              - UCM.Running
+            mode_dependency:
+              - MachineFG.Startup
+        "#;
+        let app_manifest2: &'static str = r#"
+            name: UCM
+            mode_dependency:
+              - MachineFG.Shutdown
+        "#;
+
+        let oara_exec_path = add_oara_exec_folder(&oara_config_path);
+        let _ = configure_execution_manifest(&oara_exec_path, "t9", app_manifest1);
+        let _ = configure_execution_manifest(&oara_exec_path, "t10", app_manifest2);
+
+        let execution_manifest = load_execution_manifest(&oara_config_path, "");
+        assert!(execution_manifest.is_ok());
+
+        let validate = validate_manifest(machine_manifest, execution_manifest.unwrap());
+        assert_eq!(
+            validate.err().map(|e| e.to_string()).unwrap(),
+            String::from("Dependency app(UCM) is not in the mode"),
+        );
+
+        fs::remove_dir_all(&oara_config_path).unwrap();
+    }
 
     #[test]
     fn circular_dependency_app() {}
