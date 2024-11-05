@@ -1,6 +1,13 @@
+use std::sync::Arc;
+
 use thiserror::Error;
 use anyhow::Result;
+use tokio::signal::unix::{signal, SignalKind};
+use tokio::time::{sleep, Duration};
+use std::error::Error;
+use tokio::task::JoinHandle;
 
+/*
 /// [SWS_EM_02000] Definition of API enum `ara::exec::ExecutionState`
 ///
 /// Defines the internal states of a Process (see 7.3.1).
@@ -138,4 +145,24 @@ impl ExecutionClient {
         Ok(())
     }
 
+}*/
+
+pub struct ExecutionClient {
+    on_sigterm: Arc<dyn Fn() + Send + Sync>,
+}
+
+impl ExecutionClient {
+    fn new(callback: Arc<dyn Fn() + Send + Sync>) -> Self {
+        ExecutionClient { on_sigterm: callback }
+    }
+
+    async fn run(self) {
+        let mut sigterm = signal(SignalKind::terminate()).expect("Failed to create SIGTERM handler");
+
+        tokio::spawn(async move {
+            sigterm.recv().await;
+        })
+        .await
+        .expect("Failed to run signal handler");
+    }
 }

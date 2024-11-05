@@ -7,7 +7,7 @@ use thiserror::Error;
 
 use super::machine_manifest::MachineManifest;
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 struct EnterExitTimeout {
     enter: i32,
     exit: i32,
@@ -30,7 +30,7 @@ enum ExecutionManifestError {
 }
 
 // DO NOT ADD Default derive
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ExecutionManifest {
     pub name: String,
     #[serde(default)]
