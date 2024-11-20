@@ -3,6 +3,7 @@ use ara_exec::manifest::execution_manifest::ExecutionManifest;
 use ara_exec::manifest::machine_manifest::MachineManifest;
 use std::collections::HashMap;
 use thiserror::Error;
+use tokio::sync::mpsc;
 
 use crate::function_group_state;
 
@@ -18,6 +19,11 @@ enum GroupingError {
 
 pub type FunctionGroupState = HashMap<String, Vec<ExecutionManifest>>;
 pub type FunctionGroup = HashMap<String, FunctionGroupState>;
+
+pub struct InternalFgMode {
+    pub function_group: String,
+    pub state: String,
+}
 
 // TBD : MachineFg도 Off를 넣어야 한다.
 // grouping manifest base on function group state
@@ -107,6 +113,7 @@ pub fn group(
             }
 
             if mode_name == "Off" {
+                // FIXME : to const variable
                 // reverse
                 manifest_list.reverse();
             }
@@ -117,7 +124,6 @@ pub fn group(
 }
 
 async fn change_mode(mode: Vec<FunctionGroup>) {
-
 
     // need async operation
     // spawn application based on depdency while wait reporting.
@@ -139,7 +145,5 @@ mod tests {
     use super::*;
 
     #[test]
-    fn grouping_test() {
-
-    }
+    fn grouping_test() {}
 }

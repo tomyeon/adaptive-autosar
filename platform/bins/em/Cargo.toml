@@ -16,3 +16,4 @@ lazy_static = { workspace = true }
 clap = { version = "4.0", features = ["derive"] }
 tokio = { version = "1.40", features = ["full"] }
 serde = "1.0"
+libc = "0.2"

@@ -1,11 +1,13 @@
 use std::sync::Arc;
 
-use thiserror::Error;
 use anyhow::Result;
-use tokio::signal::unix::{signal, SignalKind};
-use tokio::time::{sleep, Duration};
 use std::error::Error;
+use std::future::Future;
+use thiserror::Error;
+use tokio::signal::unix::{signal, SignalKind};
+use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
+use tokio::time::{sleep, Duration};
 
 /*
 /// [SWS_EM_02000] Definition of API enum `ara::exec::ExecutionState`
@@ -148,21 +150,75 @@ impl ExecutionClient {
 }*/
 
 pub struct ExecutionClient {
-    on_sigterm: Arc<dyn Fn() + Send + Sync>,
+    signal_channel: Option<mpsc::Receiver<()>>,
 }
 
 impl ExecutionClient {
-    fn new(callback: Arc<dyn Fn() + Send + Sync>) -> Self {
-        ExecutionClient { on_sigterm: callback }
+    fn new() -> Self {
+        ExecutionClient {
+            //signal_handler: None,
+            signal_channel: None,
+        }
     }
 
-    async fn run(self) {
+    /*async fn run_with_signal_handler(self, signal_handler: Arc<dyn Fn() + Send + Sync>) -> Self {
         let mut sigterm = signal(SignalKind::terminate()).expect("Failed to create SIGTERM handler");
 
         tokio::spawn(async move {
             sigterm.recv().await;
-        })
-        .await
-        .expect("Failed to run signal handler");
+            signal_handler();
+        });
+
+        self
+    }*/
+
+    async fn run_with_signal_handler<F, Fut>(self, handler: F) -> Self
+    where
+        F: Fn() -> Fut + Send + 'static,
+        Fut: Future<Output = ()> + Send + 'static,
+    {
+        let mut sigterm =
+            signal(SignalKind::terminate()).expect("Failed to create SIGTERM handler");
+
+        tokio::spawn(async move {
+            sigterm.recv().await;
+            handler().await;
+        });
+
+        self
+    }
+
+    async fn run_with_channel(mut self) -> Self {
+        let (tx, rx) = mpsc::channel::<()>(1);
+        let mut sigterm =
+            signal(SignalKind::terminate()).expect("Failed to create SIGTERM handler");
+        self.signal_channel = Some(rx);
+
+        tokio::spawn(async move {
+            sigterm.recv().await;
+            let _ = tx.send(()).await;
+        });
+
+        self
+    }
+}
+
+mod tests {
+    use super::*;
+
+    async fn sigterm_handler() {
+        println!("called ");
+    }
+
+    #[test]
+    fn signal_handler() {
+        // not sure how to test SIGTERM
+        let execution_client = ExecutionClient::new().run_with_signal_handler(sigterm_handler);
+    }
+
+    #[test]
+    fn signal_channel() {
+        // not sure how to test SIGTERM
+        let execution_client = ExecutionClient::new().run_with_channel();
     }
 }

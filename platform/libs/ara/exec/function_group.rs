@@ -1,4 +1,25 @@
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
+pub type FunctionGroup = String;
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct FunctionGroupState {
+    pub function_group: FunctionGroup,
+    pub function_group_state: String,
+}
+
+impl FunctionGroupState {
+    pub fn new(function_group: FunctionGroup, function_group_state: String) -> Self {
+        Self {
+            function_group,
+            function_group_state,
+        }
+    }
+}
+
+/*
 // TBD: all function group's are obsolute
 
 /// [SWS_EM_02263]{OBSOLETE} Definition of API class ara::exec::FunctionGroup
@@ -10,7 +31,7 @@
 /// object.
 #[derive(PartialEq, Eq)]
 struct FunctionGroup {
-
+    name: String,
 }
 
 impl FunctionGroup {
@@ -30,7 +51,7 @@ impl FunctionGroup {
         // let's see what to do
         // stringified meta model identifier (short name path) where path separator is ’/’.
         Ok(Self {
-
+            name: qualified_short_name,
         })
     }
 }
@@ -42,12 +63,15 @@ impl FunctionGroup {
 /// Description: Class representing Function Group State defined in meta-model (ARXML).
 /// Notes: Once created based on ARXML path, it’s internal value stay bounded to it for entire lifetime of an object.
 struct FunctionGroupState {
+    function_group: FunctionGroup,
+    function_group_state: String,
 }
 
 impl FunctionGroupState {
-    pub fn new(function_group: &FunctionGroup, qualified_short_name: &String) -> Result<Self> {
+    pub fn new(function_group: FunctionGroup, qualified_short_name: String) -> Result<Self> {
         Ok(Self {
-
+            function_group,
+            function_group_state: qualified_short_name,
         })
     }
-}
+}*/
