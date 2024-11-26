@@ -1,8 +1,13 @@
-use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
 
 pub type FunctionGroup = String;
+
+pub const MACHINE_FG: &str = "MachineFg";
+pub const STARTUP: &str = "Startup";
+pub const RESTART: &str = "Restart";
+pub const SHUTDOWN: &str = "Shutdown";
+pub const ON: &str = "On";
+pub const OFF: &str = "Off";
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct FunctionGroupState {
@@ -17,6 +22,13 @@ impl FunctionGroupState {
             function_group_state,
         }
     }
+}
+
+pub fn get_machine_fg_state(state: &str) -> FunctionGroupState {
+    FunctionGroupState::new(
+        MACHINE_FG.to_owned(),
+        state.to_owned(),
+    )
 }
 
 /*

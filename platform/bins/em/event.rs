@@ -12,8 +12,11 @@ pub enum ChangeStateError {
 }
 
 pub struct RequestChangeState {
+    #[allow(unused)]    // FIXME
     function_group: String,
+    #[allow(unused)]    // FIXME
     function_group_state: String,
+    #[allow(unused)]    // FIXME
     response_channel: mpsc::Sender<Option<ChangeStateError>>,
 }
 

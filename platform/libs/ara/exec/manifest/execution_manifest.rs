@@ -8,7 +8,7 @@ use thiserror::Error;
 use super::machine_manifest::MachineManifest;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-struct EnterExitTimeout {
+pub struct EnterExitTimeout {
     enter: i32,
     exit: i32,
 }
@@ -126,6 +126,7 @@ impl ExecutionManifest {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::super::machine_manifest::FunctionGroupMode;
     use super::*;

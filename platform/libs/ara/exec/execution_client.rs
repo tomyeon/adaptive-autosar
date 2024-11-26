@@ -1,13 +1,13 @@
-use std::sync::Arc;
+//use std::sync::Arc;
 
-use anyhow::Result;
-use std::error::Error;
+//use anyhow::Result;
+//use std::error::Error;
 use std::future::Future;
-use thiserror::Error;
+//use thiserror::Error;
 use tokio::signal::unix::{signal, SignalKind};
 use tokio::sync::mpsc;
-use tokio::task::JoinHandle;
-use tokio::time::{sleep, Duration};
+//use tokio::task::JoinHandle;
+//use tokio::time::{sleep, Duration};
 
 /*
 /// [SWS_EM_02000] Definition of API enum `ara::exec::ExecutionState`
@@ -150,10 +150,12 @@ impl ExecutionClient {
 }*/
 
 pub struct ExecutionClient {
+    #[allow(unused)]    // FIXME
     signal_channel: Option<mpsc::Receiver<()>>,
 }
 
 impl ExecutionClient {
+    #[allow(unused)]    // FIXME
     fn new() -> Self {
         ExecutionClient {
             //signal_handler: None,
@@ -172,6 +174,7 @@ impl ExecutionClient {
         self
     }*/
 
+    #[allow(unused)]    // FIXME
     async fn run_with_signal_handler<F, Fut>(self, handler: F) -> Self
     where
         F: Fn() -> Fut + Send + 'static,
@@ -188,6 +191,7 @@ impl ExecutionClient {
         self
     }
 
+    #[allow(unused)]    // FIXME
     async fn run_with_channel(mut self) -> Self {
         let (tx, rx) = mpsc::channel::<()>(1);
         let mut sigterm =
@@ -203,6 +207,7 @@ impl ExecutionClient {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -213,12 +218,12 @@ mod tests {
     #[test]
     fn signal_handler() {
         // not sure how to test SIGTERM
-        let execution_client = ExecutionClient::new().run_with_signal_handler(sigterm_handler);
+        let _execution_client = ExecutionClient::new().run_with_signal_handler(sigterm_handler);
     }
 
     #[test]
     fn signal_channel() {
         // not sure how to test SIGTERM
-        let execution_client = ExecutionClient::new().run_with_channel();
+        let _execution_client = ExecutionClient::new().run_with_channel();
     }
 }

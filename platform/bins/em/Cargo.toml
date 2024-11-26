@@ -14,6 +14,8 @@ thiserror = { workspace = true }
 anyhow = { workspace = true }
 lazy_static = { workspace = true }
 clap = { version = "4.0", features = ["derive"] }
-tokio = { version = "1.40", features = ["full"] }
-serde = "1.0"
+tokio = { workspace = true }
+serde = { workspace = true }
 libc = "0.2"
+bincode = { workspace = true }
+once_cell = "1.20"

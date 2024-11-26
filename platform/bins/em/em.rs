@@ -3,12 +3,10 @@ pub mod config;
 pub mod event;
 pub mod function_group_state;
 
-use std::sync::mpsc::Receiver;
-
 use anyhow::Result;
-use function_group_state::group::{group, InternalFgMode};
-use tokio::spawn;
-use tokio::sync::mpsc;
+use function_group_state::group::group;
+use crate::event::state_manager::{set_state, set_intial_state};
+use ara_exec::function_group::{get_machine_fg_state, STARTUP};
 
 /*
                                            Something Structure to manage function group state for every group
@@ -45,9 +43,9 @@ async fn main() -> Result<()> {
     )?;
 
     let _ = config::configuration::validate_manifest(&machine_manifest, &execution_manifest)?;
-    let fg_state = group(machine_manifest, execution_manifest)?;
+    let fg_hashmap = group(machine_manifest, execution_manifest)?;
 
-    let (resp_tx, mut resp_rx) = mpsc::channel(1);
+    /*let (resp_tx, mut resp_rx) = mpsc::channel(1);
     let (tx, mut rx) = mpsc::channel::<event::RequestChangeState>(5);
 
     let _handle = tokio::spawn(event::state_manager::state_manager(rx));
@@ -61,14 +59,24 @@ async fn main() -> Result<()> {
         Some(response) => {
             if let Some(error) = response {
                 println!("something wrong : {:?}", error);
-                todo!();
+                set_intial_state(false);
+            } else {
+                set_intial_state(true);
             }
         }
         None => {
-            println!("Channel might be broken")
+            panic!("Channel might be broken")
+        }
+    }*/
+    match set_state(&fg_hashmap, get_machine_fg_state(STARTUP)) {
+        Ok(()) => {
+            set_intial_state(true);
+        }
+        Err(_) => {
+            set_intial_state(false);
         }
     }
 
-    //let _handle = tokio::spawn(event::state_manager::state_receiver());
+    let _handle = tokio::spawn(event::state_manager::state_receiver());
     Ok(())
 }

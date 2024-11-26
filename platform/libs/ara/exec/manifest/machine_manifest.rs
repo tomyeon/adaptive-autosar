@@ -131,6 +131,7 @@ impl MachineManifest {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 

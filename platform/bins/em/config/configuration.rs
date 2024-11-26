@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use super::{EXECUTION_MANIFEST_FILE, MACHINE_MANIFEST_FILE, OARA_CONFIG_EXEC};
+//use super::{EXECUTION_MANIFEST_FILE, MACHINE_MANIFEST_FILE, OARA_CONFIG_EXEC};
 use anyhow::Result;
 use ara_exec::manifest::execution_manifest::ExecutionManifest;
 use ara_exec::manifest::machine_manifest::MachineManifest;
@@ -37,6 +37,7 @@ enum ExecutionManifestError {
     #[error("Missing dependency application : {0} for {1}")]
     MissingDependencyApp(String, String),
     #[error("Self dependency is not allowed : {0}")]
+    #[allow(unused)]    // FIXME
     SelfDependency(String),
     #[error("Dependency app({0}) is not in the mode")]
     InvalidModeDependency(String),
@@ -148,8 +149,9 @@ pub fn validate_manifest(
     Ok(())
 }
 
+#[cfg(test)]
 mod tests {
-    use ara_exec::manifest::execution_manifest;
+    use crate::config::{MACHINE_MANIFEST_FILE, OARA_CONFIG_EXEC, EXECUTION_MANIFEST_FILE};
 
     use super::*;
     use std::{
@@ -216,6 +218,8 @@ mod tests {
         }
     }
 
+    // FIXME
+    #[allow(unused)]
     fn oara_folder_exists<P: AsRef<Path>>(dir_name: P) -> bool {
         let cur = env::current_exe().unwrap();
         let oara_config = cur.join(dir_name);
@@ -234,6 +238,8 @@ mod tests {
         oara_config
     }
 
+    // FIXME
+    #[allow(unused)]
     fn make_oara_exec_folder<P: AsRef<Path>>(dir_path: P) -> PathBuf {
         let oara_path = make_oara_folder(dir_path);
         let oara_exec_path = oara_path.join(OARA_CONFIG_EXEC);

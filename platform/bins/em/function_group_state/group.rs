@@ -3,9 +3,6 @@ use ara_exec::manifest::execution_manifest::ExecutionManifest;
 use ara_exec::manifest::machine_manifest::MachineManifest;
 use std::collections::HashMap;
 use thiserror::Error;
-use tokio::sync::mpsc;
-
-use crate::function_group_state;
 
 #[derive(Debug, Error)]
 enum GroupingError {
@@ -17,21 +14,21 @@ enum GroupingError {
 
 // grouping manifest based on dependency
 
-pub type FunctionGroupState = HashMap<String, Vec<ExecutionManifest>>;
-pub type FunctionGroup = HashMap<String, FunctionGroupState>;
+pub type FunctionGroupStateHashMap = HashMap<String, Vec<ExecutionManifest>>;
+pub type FunctionGroupHashMap = HashMap<String, FunctionGroupStateHashMap>;
 
-pub struct InternalFgMode {
+/*pub struct InternalFgMode {
     pub function_group: String,
     pub state: String,
-}
+}*/
 
 // TBD : MachineFg도 Off를 넣어야 한다.
 // grouping manifest base on function group state
 pub fn group(
     machine_manifest: MachineManifest,
     execution_manifests: Vec<ExecutionManifest>,
-) -> Result<FunctionGroup> {
-    let mut function_group = FunctionGroup::new();
+) -> Result<FunctionGroupHashMap> {
+    let mut function_group = FunctionGroupHashMap::new();
 
     // MachineFG
     //  |- Startup
@@ -123,12 +120,6 @@ pub fn group(
     Ok(function_group)
 }
 
-async fn change_mode(mode: Vec<FunctionGroup>) {
-
-    // need async operation
-    // spawn application based on depdency while wait reporting.
-}
-
 // "On" State
 // -------------------------------------------------------------------------------
 //  "A" -> "B" -> "C"       | "C" -> "B" -> "A"
@@ -141,8 +132,8 @@ async fn change_mode(mode: Vec<FunctionGroup>) {
 //  "E" -> "B"              |
 //  "P" -> "A"              |
 
+#[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn grouping_test() {}

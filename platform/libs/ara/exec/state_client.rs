@@ -1,14 +1,11 @@
 use lazy_static::lazy_static;
 use std::path::Path;
 use std::sync::Arc;
-//use std::os::unix::net::{UnixStream, UnixListener};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::{UnixListener, UnixStream};
+use tokio::net::UnixStream;
 use tokio::sync::Mutex;
-//use std::io::{self, Write, Read};
 use thiserror::Error;
-//use strum_macros::Display;
-use crate::function_group::{FunctionGroup, FunctionGroupState};
+use crate::function_group::FunctionGroupState;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio::time::{timeout, Duration};
@@ -61,6 +58,7 @@ lazy_static! {
     static ref STATE_CLIENT: Arc<Mutex<StateClient>> = Arc::new(Mutex::new(StateClient::new()));
 }
 
+#[allow(unused)]    // FIXME
 async fn connect<P>(path: Option<P>)
 where
     P: AsRef<Path>,
@@ -72,6 +70,7 @@ where
     }
 }
 
+#[allow(unused)]    // FIXME
 async fn state_client() -> Arc<Mutex<StateClient>> {
     STATE_CLIENT.clone()
 }
@@ -113,6 +112,8 @@ impl StateClient {
     ///   if transition to the requested Function Group state failed
     /// ara::exec::ExecErrc::kCommunicationError
     ///   if StateClient can’t communicate with Execution Management (e.g.IPC link is down)
+
+    #[allow(unused)]
     pub async fn get_initial_machine_state_transition_result(&mut self) -> Result<()> {
         assert!(self.socket.is_some());
         if let Some(socket) = self.socket.as_mut() {
@@ -182,6 +183,7 @@ impl StateClient {
     /// Description: Method to request state transition for a single Function Group.
     /// This method will request Execution Management to perform state transition and return
     /// immediately. Returned ara::core::Future can be used to determine result of requested transition.
+    #[allow(unused)]
     pub async fn set_state(&mut self, state: &FunctionGroupState) -> Result<()> {
         assert!(self.socket.is_some());
         if let Some(socket) = self.socket.as_mut() {
@@ -223,8 +225,10 @@ impl StateClient {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
+    use tokio::net::UnixListener;
 
     #[tokio::test]
     async fn get_initial_machine_state_transition() {
@@ -252,7 +256,7 @@ mod tests {
                                 let serialized_resonse = bincode::serialize(&response).unwrap();
                                 stream.write(&serialized_resonse).await.unwrap();
                             }
-                            SmClientCommand::SetState(fg_state) => {
+                            SmClientCommand::SetState(_fg_state) => {
                                 assert!(false);
                             }
                         }
@@ -269,7 +273,7 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(10)).await;
 
         let mut state_client = StateClient::new();
-        state_client.connect(&domain_socket_path).await;
+        state_client.connect(&domain_socket_path).await.unwrap();
 
         let result = state_client
             .get_initial_machine_state_transition_result()
@@ -305,7 +309,7 @@ mod tests {
                                 let serialized_resonse = bincode::serialize(&response).unwrap();
                                 stream.write(&serialized_resonse).await.unwrap();
                             }
-                            SmClientCommand::SetState(fg_state) => {
+                            SmClientCommand::SetState(_fg_state) => {
                                 assert!(false);
                             }
                         }
@@ -322,7 +326,7 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(10)).await;
 
         let mut state_client = StateClient::new();
-        state_client.connect(&domain_socket_path).await;
+        state_client.connect(&domain_socket_path).await.unwrap();
 
         let result = state_client
             .get_initial_machine_state_transition_result()
@@ -340,7 +344,7 @@ mod tests {
 
     #[tokio::test]
     async fn set_state() {
-        let domain_socket_path = std::env::temp_dir().join("test_domain_socket2");
+        let domain_socket_path = std::env::temp_dir().join("test_domain_socket3");
         let cloned_socket_path = domain_socket_path.clone();
 
         let handle = tokio::spawn(async move {
@@ -386,7 +390,7 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(10)).await;
 
         let mut state_client = StateClient::new();
-        state_client.connect(&domain_socket_path).await;
+        state_client.connect(&domain_socket_path).await.unwrap();
 
         let fg_state = FunctionGroupState::new("MachineFg".to_owned(), "Startup".to_owned());
         let result = state_client.set_state(&fg_state).await;

@@ -117,6 +117,7 @@ impl<'a> InstanceSpecifier<'a> {
     #[inline(always)]
     //fn to_string(&self) -> &'a str {
     // to_string is not adequate to Rust
+    #[allow(unused)]
     fn as_str(&self) -> &'a str {
         &self.meta_model_identifier
     }
